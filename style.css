@@ -1,0 +1,27 @@
+:root {
+  font-family: sans-serif;
+}
+
+.content {
+  margin: 20vh;
+  display: grid;
+}
+.gameboard {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1ch;
+  column-gap: 1ch;
+  background-color: darkgreen;
+  width: auto;
+  justify-self: center;
+  align-self: center;
+}
+
+.cell {
+  background-color: lightgray;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  font-size: 4rem;
+  justify-content: center;
+}
