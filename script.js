@@ -5,8 +5,6 @@ const gameBoard = (function () {
     ["", "", ""],
   ];
 
-  let players = [];
-
   function render() {
     for (let i = 0; i < 3; i++) {
       for (let j = 0; j < 3; j++) {
@@ -14,12 +12,18 @@ const gameBoard = (function () {
         domCache.drawCell(i, j, content);
       }
     }
+    // domCache.setListeners();
+  }
+
+  function checkWinner() {
+    domCache.declareWinner(players.activePlayer.name);
   }
 
   function tryMove(row, col, token) {
     if (state[row][col] === "") {
       state[row][col] = token;
       domCache.clearBoard();
+
       render();
     }
   }
@@ -32,6 +36,8 @@ const gameBoard = (function () {
 
 const domCache = (function () {
   let board = document.querySelector(".gameboard");
+  let messages = document.querySelector(".header");
+  const cells = document.querySelectorAll(".cell");
 
   function drawCell(row, col, content) {
     let newCell = document.createElement("div");
@@ -39,32 +45,67 @@ const domCache = (function () {
     newCell.setAttribute("data-row", `${row}`);
     newCell.setAttribute("data-col", `${col}`);
     newCell.textContent = content;
-    newCell.addEventListener;
+    newCell.addEventListener("click", handleMove);
     board.appendChild(newCell);
   }
 
+  function declareWinner(name) {
+    messages.textContent = name;
+  }
+
   function clearBoard() {
-    document.querySelectorAll(".cell").forEach((element) => element.removeEventListener("click"));
-    document.querySelectorAll(".cell").forEach((element) => element.remove());
+    cells.forEach((element) => element.removeEventListener("click", handleMove));
+    cells.forEach((element) => element.remove());
   }
 
   // function setListeners() {
-  //   document
-  //     .querySelectorAll(".cell")
-  //     .forEach((element) => element.addEventListener("click", gameBoard.currentPlayer.tryMove));
+  //   cells.forEach((element) => element.addEventListener("click", handleMove));
   // }
+
+  function handleMove(event) {
+    let row = parseInt(event.target.getAttribute("data-row"));
+    let col = parseInt(event.target.getAttribute("data-col"));
+    console.log(row, col);
+    players.activePlayer.makeMove(row, col);
+  }
 
   return {
     drawCell,
     clearBoard,
-    setListeners,
+    declareWinner,
+    // setListeners,
   };
 })();
 
-// const makePlayer = (name, token, type) => {
-//   return {
-//     name,
-//     token,
-//     type,
-//   };
-// };
+const players = (function () {
+  const makePlayer = (name, token, type) => {
+    function makeMove(row, col) {
+      gameBoard.tryMove(row, col, token);
+      console.log("im trying to make a move");
+    }
+
+    return {
+      name,
+      token,
+      type,
+      makeMove,
+    };
+  };
+  let player1 = makePlayer("Michael", "x", "player");
+  let player2 = makePlayer("Hannah", "O", "player");
+  let players = [player1, player2];
+  let activePlayer = players[1];
+
+  function endTurn() {
+    //switch players through array.
+    //only works with 2 players
+    activePlayer = activePlayer == players[0] ? players[1] : players[0];
+  }
+
+  return {
+    activePlayer,
+    endTurn,
+  };
+})();
+
+gameBoard.render();
