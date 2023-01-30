@@ -12,20 +12,64 @@ const gameBoard = (function () {
         domCache.drawCell(i, j, content);
       }
     }
-    // domCache.setListeners();
+    domCache.init();
   }
 
-  function checkWinner() {
-    domCache.declareWinner(players.activePlayer.name);
+  function isWinningMove() {
+    //check rows
+    for (let i = 0; i < 3; i++) {
+      if (
+        state[i][0] != "" &&
+        state[i][0] === state[i][1] &&
+        state[i][0] === state[i][2]
+      ) {
+        return true;
+      }
+    }
+
+    //check columns
+    for (let i = 0; i < 3; i++) {
+      if (
+        state[0][i] != "" &&
+        state[0][i] === state[1][i] &&
+        state[0][i] === state[2][i]
+      ) {
+        return true;
+      }
+    }
+
+    //check top-left to bottom right diagonal
+    if (
+      state[0][0] != "" &&
+      state[0][0] === state[1][1] &&
+      state[0][0] === state[2][2]
+    ) {
+      return true;
+    }
+
+    //check top-right to bottom left diagonal
+    if (
+      state[0][2] != "" &&
+      state[0][2] === state[1][1] &&
+      state[0][2] === state[2][0]
+    ) {
+      return true;
+    }
   }
 
   function tryMove(row, col, token) {
+    console.log("tryMove start");
     if (state[row][col] === "") {
+      console.log(players.getActivePlayer());
       state[row][col] = token;
       domCache.clearBoard();
-
       render();
+      if (isWinningMove()) {
+        console.log("win");
+        domCache.declareWinner(players.getActivePlayer().name);
+      }
     }
+    players.endTurn();
   }
 
   return {
@@ -37,7 +81,7 @@ const gameBoard = (function () {
 const domCache = (function () {
   let board = document.querySelector(".gameboard");
   let messages = document.querySelector(".header");
-  const cells = document.querySelectorAll(".cell");
+  let cells = [];
 
   function drawCell(row, col, content) {
     let newCell = document.createElement("div");
@@ -45,7 +89,7 @@ const domCache = (function () {
     newCell.setAttribute("data-row", `${row}`);
     newCell.setAttribute("data-col", `${col}`);
     newCell.textContent = content;
-    newCell.addEventListener("click", handleMove);
+    // newCell.addEventListener("click", handleMove);
     board.appendChild(newCell);
   }
 
@@ -53,27 +97,29 @@ const domCache = (function () {
     messages.textContent = name;
   }
 
-  function clearBoard() {
-    cells.forEach((element) => element.removeEventListener("click", handleMove));
-    cells.forEach((element) => element.remove());
+  function init() {
+    cells = document.querySelectorAll(".cell");
+    cells.forEach((element) => element.addEventListener("click", handleMove));
   }
 
-  // function setListeners() {
-  //   cells.forEach((element) => element.addEventListener("click", handleMove));
-  // }
+  function clearBoard() {
+    cells.forEach((element) =>
+      element.removeEventListener("click", handleMove)
+    );
+    cells.forEach((element) => element.remove());
+  }
 
   function handleMove(event) {
     let row = parseInt(event.target.getAttribute("data-row"));
     let col = parseInt(event.target.getAttribute("data-col"));
-    console.log(row, col);
-    players.activePlayer.makeMove(row, col);
+    players.getActivePlayer().makeMove(row, col);
   }
 
   return {
+    init,
     drawCell,
     clearBoard,
     declareWinner,
-    // setListeners,
   };
 })();
 
@@ -81,9 +127,8 @@ const players = (function () {
   const makePlayer = (name, token, type) => {
     function makeMove(row, col) {
       gameBoard.tryMove(row, col, token);
-      console.log("im trying to make a move");
+      console.log(row, col);
     }
-
     return {
       name,
       token,
@@ -93,18 +138,24 @@ const players = (function () {
   };
   let player1 = makePlayer("Michael", "x", "player");
   let player2 = makePlayer("Hannah", "O", "player");
-  let players = [player1, player2];
-  let activePlayer = players[1];
+  // let playerArray = [player1, player2];
+  let activePlayer = player1;
 
   function endTurn() {
-    //switch players through array.
-    //only works with 2 players
-    activePlayer = activePlayer == players[0] ? players[1] : players[0];
+    if (activePlayer === player1) {
+      activePlayer = player2;
+    } else activePlayer = player1;
+    console.log("end turn run");
+    console.log(activePlayer);
+  }
+
+  function getActivePlayer() {
+    return activePlayer;
   }
 
   return {
-    activePlayer,
     endTurn,
+    getActivePlayer,
   };
 })();
 
