@@ -60,12 +60,10 @@ const gameBoard = (function () {
   function tryMove(row, col, token) {
     console.log("tryMove start");
     if (state[row][col] === "") {
-      console.log(players.getActivePlayer());
       state[row][col] = token;
       domCache.clearBoard();
       render();
       if (isWinningMove()) {
-        console.log("win");
         domCache.declareWinner(players.getActivePlayer().name);
       }
     }
@@ -89,7 +87,6 @@ const domCache = (function () {
     newCell.setAttribute("data-row", `${row}`);
     newCell.setAttribute("data-col", `${col}`);
     newCell.textContent = content;
-    // newCell.addEventListener("click", handleMove);
     board.appendChild(newCell);
   }
 
@@ -127,7 +124,6 @@ const players = (function () {
   const makePlayer = (name, token, type) => {
     function makeMove(row, col) {
       gameBoard.tryMove(row, col, token);
-      console.log(row, col);
     }
     return {
       name,
